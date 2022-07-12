@@ -5,13 +5,27 @@
 //  Created by Oluwatobi Omotayo on 12/07/2022.
 //
 
+import Combine
 import SwiftUI
 
 class AppViewModel: ObservableObject {
   @Published var isConnected: Bool
+  @Published var weatherResults: [WeatherResponse.ConsolidatedWeather] = []
+  
+  var weatherRequestCancellable: AnyCancellable?
   
   init(isConnected: Bool = true) {
     self.isConnected = isConnected
+    
+    self.weatherRequestCancellable =  URLSession.shared.dataTaskPublisher(for: URL(string: "https://www.metaweather.com/api/location/2459115")!)
+      .map { data, _ in data }
+      .decode(type: WeatherResponse.self, decoder: weatherJsonDecoder)
+      .receive(on: DispatchQueue.main)
+      .sink(
+        receiveCompletion: { _ in },
+        receiveValue: {[weak self] response in
+          self?.weatherResults = response.consolidatedWeather
+        })
   }
 }
 
@@ -57,7 +71,28 @@ struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
   static var previews: some View {
     ContentView(
-      viewModel: AppViewModel()
+      viewModel: AppViewModel(isConnected: false)
     )
   }
 }
+
+struct WeatherResponse: Decodable, Equatable {
+  var consolidatedWeather: [ConsolidatedWeather]
+  
+  struct ConsolidatedWeather: Decodable, Equatable {
+    var applicableDate: Date
+    var id: Int
+    var maxTemp: Double
+    var minTemp: Double
+    var theTemp: Double
+  }
+}
+
+private let weatherJsonDecoder: JSONDecoder = {
+  let jsonDecoder = JSONDecoder()
+  let formatter = DateFormatter()
+  formatter.dateFormat = "yyyy-MM-dd"
+  jsonDecoder.dateDecodingStrategy = .formatted(formatter)
+  jsonDecoder.keyDecodingStrategy = .convertFromSnakeCase
+  return jsonDecoder
+}()
