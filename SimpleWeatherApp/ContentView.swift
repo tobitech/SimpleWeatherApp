@@ -14,13 +14,10 @@ class AppViewModel: ObservableObject {
   
   var weatherRequestCancellable: AnyCancellable?
   
-  init(isConnected: Bool = true) {
+  init(isConnected: Bool = true, weatherClient: WeatherClientProtocol = WeatherClient()) {
     self.isConnected = isConnected
     
-    self.weatherRequestCancellable =  URLSession.shared.dataTaskPublisher(for: URL(string: "https://www.metaweather.com/api/location/2459115")!)
-      .map { data, _ in data }
-      .decode(type: WeatherResponse.self, decoder: weatherJsonDecoder)
-      .receive(on: DispatchQueue.main)
+    self.weatherRequestCancellable =  weatherClient.weather()
       .sink(
         receiveCompletion: { _ in },
         receiveValue: {[weak self] response in
@@ -90,6 +87,21 @@ let dayOfWeekFormatter: DateFormatter = {
   formatter.dateFormat = "EEEE"
   return formatter
 }()
+
+protocol WeatherClientProtocol {
+  // describe the signature of making a weather request here.
+  func weather() -> AnyPublisher<WeatherResponse, Error>
+}
+
+struct WeatherClient: WeatherClientProtocol {
+  func weather() -> AnyPublisher<WeatherResponse, Error> {
+    URLSession.shared.dataTaskPublisher(for: URL(string: "https://www.metaweather.com/api/location/2459115")!)
+      .map { data, _ in data }
+      .decode(type: WeatherResponse.self, decoder: weatherJsonDecoder)
+      .receive(on: DispatchQueue.main)
+      .eraseToAnyPublisher()
+  }
+}
 
 struct WeatherResponse: Decodable, Equatable {
   var consolidatedWeather: [ConsolidatedWeather]
