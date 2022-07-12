@@ -77,7 +77,7 @@ struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
   static var previews: some View {
     ContentView(
-      viewModel: AppViewModel()
+      viewModel: AppViewModel(weatherClient: MockWeatherClient())
     )
   }
 }
@@ -99,6 +99,22 @@ struct WeatherClient: WeatherClientProtocol {
       .map { data, _ in data }
       .decode(type: WeatherResponse.self, decoder: weatherJsonDecoder)
       .receive(on: DispatchQueue.main)
+      .eraseToAnyPublisher()
+  }
+}
+
+struct MockWeatherClient: WeatherClientProtocol {
+  func weather() -> AnyPublisher<WeatherResponse, Error> {
+    Just(
+      WeatherResponse(
+        consolidatedWeather: [
+          .init(applicableDate: Date(), id: 1, maxTemp: 30, minTemp: 10, theTemp: 20),
+          .init(applicableDate: Date().addingTimeInterval(86400), id: 2, maxTemp: -10, minTemp: -30, theTemp: -20)
+        ]
+      )
+    )
+    // Just publishers have a Never error that's why we need to set the failure type below.
+      .setFailureType(to: Error.self)
       .eraseToAnyPublisher()
   }
 }
