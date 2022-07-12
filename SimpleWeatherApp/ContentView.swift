@@ -6,6 +6,7 @@
 //
 
 import Combine
+import CoreLocation
 import SwiftUI
 
 class AppViewModel: ObservableObject {
@@ -77,7 +78,22 @@ struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
   static var previews: some View {
     ContentView(
-      viewModel: AppViewModel(weatherClient: MockWeatherClient())
+      viewModel: AppViewModel(
+        weatherClient: MockWeatherClient(
+          _weather: {
+            Just(WeatherResponse(consolidatedWeather: []))
+              .setFailureType(to: Error.self)
+              .eraseToAnyPublisher()
+          },
+          _searchLocations: { _ in
+            Just([])
+              .setFailureType(to: Error.self)
+              .eraseToAnyPublisher() 
+          })
+          
+          
+        // EmptyWeatherClient()
+      )
     )
   }
 }
@@ -91,6 +107,11 @@ let dayOfWeekFormatter: DateFormatter = {
 protocol WeatherClientProtocol {
   // describe the signature of making a weather request here.
   func weather() -> AnyPublisher<WeatherResponse, Error>
+  func searchLocations(coordinate: CLLocationCoordinate2D) -> AnyPublisher<[Location], Error>
+}
+
+struct Location {
+  
 }
 
 struct WeatherClient: WeatherClientProtocol {
@@ -103,7 +124,34 @@ struct WeatherClient: WeatherClientProtocol {
   }
 }
 
-struct MockWeatherClient: WeatherClientProtocol {
+//struct MockWeatherClient: WeatherClientProtocol {
+//  func weather() -> AnyPublisher<WeatherResponse, Error> {
+//    Just(
+//      WeatherResponse(
+//        consolidatedWeather: [
+//          .init(applicableDate: Date(), id: 1, maxTemp: 30, minTemp: 10, theTemp: 20),
+//          .init(applicableDate: Date().addingTimeInterval(86400), id: 2, maxTemp: -10, minTemp: -30, theTemp: -20)
+//        ]
+//      )
+//    )
+//     // Just publishers have a Never error that's why we need to set the failure type below.
+//      .setFailureType(to: Error.self)
+//      // to simulate what happens when weather API takes time to return a response.
+//      .delay(for: 2, scheduler: DispatchQueue.main)
+////    Fail(error: NSError(domain: "", code: 1, userInfo: nil))
+//      .eraseToAnyPublisher()
+//  }
+//}
+
+struct EmptyWeatherClient: WeatherClientProtocol {
+  func weather() -> AnyPublisher<WeatherResponse, Error> {
+    Just(WeatherResponse(consolidatedWeather: []))
+    .setFailureType(to: Error.self)
+    .eraseToAnyPublisher()
+  }
+}
+
+struct HappyWeatherClient: WeatherClientProtocol {
   func weather() -> AnyPublisher<WeatherResponse, Error> {
     Just(
       WeatherResponse(
@@ -113,12 +161,29 @@ struct MockWeatherClient: WeatherClientProtocol {
         ]
       )
     )
-     // Just publishers have a Never error that's why we need to set the failure type below.
       .setFailureType(to: Error.self)
-      // to simulate what happens when weather API takes time to return a response.
-      .delay(for: 2, scheduler: DispatchQueue.main)
-//    Fail(error: NSError(domain: "", code: 1, userInfo: nil))
       .eraseToAnyPublisher()
+  }
+}
+
+struct FailedWeatherClient: WeatherClientProtocol {
+  func weather() -> AnyPublisher<WeatherResponse, Error> {
+    Fail(error: NSError(domain: "", code: 1, userInfo: nil))
+      .eraseToAnyPublisher()
+  }
+}
+
+struct MockWeatherClient: WeatherClientProtocol {
+  
+  var _weather: () -> AnyPublisher<WeatherResponse, Error>
+  var _searchLocations: (CLLocationCoordinate2D) -> AnyPublisher<[Location], Error>
+  
+  func weather() -> AnyPublisher<WeatherResponse, Error> {
+    self._weather()
+  }
+  
+  func searchLocations(coordinate: CLLocationCoordinate2D) -> AnyPublisher<[Location], Error> {
+    self._searchLocations(coordinate)
   }
 }
 
