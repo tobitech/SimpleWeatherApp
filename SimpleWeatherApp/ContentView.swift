@@ -105,17 +105,19 @@ struct WeatherClient: WeatherClientProtocol {
 
 struct MockWeatherClient: WeatherClientProtocol {
   func weather() -> AnyPublisher<WeatherResponse, Error> {
-//    Just(
-//      WeatherResponse(
-//        consolidatedWeather: [
-//          .init(applicableDate: Date(), id: 1, maxTemp: 30, minTemp: 10, theTemp: 20),
-//          .init(applicableDate: Date().addingTimeInterval(86400), id: 2, maxTemp: -10, minTemp: -30, theTemp: -20)
-//        ]
-//      )
-//    )
-    // Just publishers have a Never error that's why we need to set the failure type below.
-//      .setFailureType(to: Error.self)
-    Fail(error: NSError(domain: "", code: 1, userInfo: nil))
+    Just(
+      WeatherResponse(
+        consolidatedWeather: [
+          .init(applicableDate: Date(), id: 1, maxTemp: 30, minTemp: 10, theTemp: 20),
+          .init(applicableDate: Date().addingTimeInterval(86400), id: 2, maxTemp: -10, minTemp: -30, theTemp: -20)
+        ]
+      )
+    )
+     // Just publishers have a Never error that's why we need to set the failure type below.
+      .setFailureType(to: Error.self)
+      // to simulate what happens when weather API takes time to return a response.
+      .delay(for: 2, scheduler: DispatchQueue.main)
+//    Fail(error: NSError(domain: "", code: 1, userInfo: nil))
       .eraseToAnyPublisher()
   }
 }
