@@ -15,7 +15,7 @@ class AppViewModel: ObservableObject {
   
   var weatherRequestCancellable: AnyCancellable?
   
-  init(isConnected: Bool = true, weatherClient: WeatherClientProtocol = WeatherClient()) {
+  init(isConnected: Bool = true, weatherClient: WeatherClient = .live) {
     self.isConnected = isConnected
     
     self.weatherRequestCancellable =  weatherClient.weather()
@@ -77,22 +77,16 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
   static var previews: some View {
-    ContentView(
+    
+    var client = WeatherClient.happyPath
+    client.searchLocations = { _ in
+      Fail(error: NSError(domain: "", code: 1))
+        .eraseToAnyPublisher()
+    }
+    
+    return ContentView(
       viewModel: AppViewModel(
-        weatherClient: MockWeatherClient(
-          _weather: {
-            Just(WeatherResponse(consolidatedWeather: []))
-              .setFailureType(to: Error.self)
-              .eraseToAnyPublisher()
-          },
-          _searchLocations: { _ in
-            Just([])
-              .setFailureType(to: Error.self)
-              .eraseToAnyPublisher() 
-          })
-          
-          
-        // EmptyWeatherClient()
+        weatherClient: client
       )
     )
   }
@@ -104,25 +98,25 @@ let dayOfWeekFormatter: DateFormatter = {
   return formatter
 }()
 
-protocol WeatherClientProtocol {
-  // describe the signature of making a weather request here.
-  func weather() -> AnyPublisher<WeatherResponse, Error>
-  func searchLocations(coordinate: CLLocationCoordinate2D) -> AnyPublisher<[Location], Error>
-}
+//protocol WeatherClientProtocol {
+//  // describe the signature of making a weather request here.
+//  func weather() -> AnyPublisher<WeatherResponse, Error>
+//  func searchLocations(coordinate: CLLocationCoordinate2D) -> AnyPublisher<[Location], Error>
+//}
 
 struct Location {
   
 }
 
-struct WeatherClient: WeatherClientProtocol {
-  func weather() -> AnyPublisher<WeatherResponse, Error> {
-    URLSession.shared.dataTaskPublisher(for: URL(string: "https://www.metaweather.com/api/location/2459115")!)
-      .map { data, _ in data }
-      .decode(type: WeatherResponse.self, decoder: weatherJsonDecoder)
-      .receive(on: DispatchQueue.main)
-      .eraseToAnyPublisher()
-  }
-}
+//struct WeatherClient: WeatherClientProtocol {
+//  func weather() -> AnyPublisher<WeatherResponse, Error> {
+//    URLSession.shared.dataTaskPublisher(for: URL(string: "https://www.metaweather.com/api/location/2459115")!)
+//      .map { data, _ in data }
+//      .decode(type: WeatherResponse.self, decoder: weatherJsonDecoder)
+//      .receive(on: DispatchQueue.main)
+//      .eraseToAnyPublisher()
+//  }
+//}
 
 //struct MockWeatherClient: WeatherClientProtocol {
 //  func weather() -> AnyPublisher<WeatherResponse, Error> {
@@ -143,48 +137,103 @@ struct WeatherClient: WeatherClientProtocol {
 //  }
 //}
 
-struct EmptyWeatherClient: WeatherClientProtocol {
-  func weather() -> AnyPublisher<WeatherResponse, Error> {
-    Just(WeatherResponse(consolidatedWeather: []))
-    .setFailureType(to: Error.self)
-    .eraseToAnyPublisher()
-  }
+//struct EmptyWeatherClient: WeatherClientProtocol {
+//  func weather() -> AnyPublisher<WeatherResponse, Error> {
+//    Just(WeatherResponse(consolidatedWeather: []))
+//    .setFailureType(to: Error.self)
+//    .eraseToAnyPublisher()
+//  }
+//}
+//
+//struct HappyWeatherClient: WeatherClientProtocol {
+//  func weather() -> AnyPublisher<WeatherResponse, Error> {
+//    Just(
+//      WeatherResponse(
+//        consolidatedWeather: [
+//          .init(applicableDate: Date(), id: 1, maxTemp: 30, minTemp: 10, theTemp: 20),
+//          .init(applicableDate: Date().addingTimeInterval(86400), id: 2, maxTemp: -10, minTemp: -30, theTemp: -20)
+//        ]
+//      )
+//    )
+//      .setFailureType(to: Error.self)
+//      .eraseToAnyPublisher()
+//  }
+//}
+//
+//struct FailedWeatherClient: WeatherClientProtocol {
+//  func weather() -> AnyPublisher<WeatherResponse, Error> {
+//    Fail(error: NSError(domain: "", code: 1, userInfo: nil))
+//      .eraseToAnyPublisher()
+//  }
+//}
+
+struct WeatherClient {
+  var weather: () -> AnyPublisher<WeatherResponse, Error>
+  var searchLocations: (CLLocationCoordinate2D) -> AnyPublisher<[Location], Error>
 }
 
-struct HappyWeatherClient: WeatherClientProtocol {
-  func weather() -> AnyPublisher<WeatherResponse, Error> {
-    Just(
-      WeatherResponse(
-        consolidatedWeather: [
-          .init(applicableDate: Date(), id: 1, maxTemp: 30, minTemp: 10, theTemp: 20),
-          .init(applicableDate: Date().addingTimeInterval(86400), id: 2, maxTemp: -10, minTemp: -30, theTemp: -20)
-        ]
+extension WeatherClient {
+  static let live = Self(
+    weather: {
+      URLSession.shared.dataTaskPublisher(
+        for: URL(
+          string: "https://www.metaweather.com/api/location/2459115"
+        )!
       )
-    )
+      .map { data, _ in data }
+      .decode(type: WeatherResponse.self, decoder: weatherJsonDecoder)
+      .receive(on: DispatchQueue.main)
+      .eraseToAnyPublisher()
+    },
+    searchLocations: { _ in
+      fatalError()
+    }
+  )
+  
+  static let empty = Self(
+    weather: {
+      Just(WeatherResponse(consolidatedWeather: []))
+        .setFailureType(to: Error.self)
+        .eraseToAnyPublisher()
+    },
+    searchLocations: { _ in
+      Just([])
+        .setFailureType(to: Error.self)
+        .eraseToAnyPublisher()
+    }
+  )
+  
+  static let happyPath = Self(
+    weather: {
+      Just(
+        WeatherResponse(
+          consolidatedWeather: [
+            .init(applicableDate: Date(), id: 1, maxTemp: 30, minTemp: 10, theTemp: 20),
+            .init(applicableDate: Date().addingTimeInterval(86400), id: 2, maxTemp: -10, minTemp: -30, theTemp: -20)
+          ]
+        )
+      )
       .setFailureType(to: Error.self)
       .eraseToAnyPublisher()
-  }
-}
-
-struct FailedWeatherClient: WeatherClientProtocol {
-  func weather() -> AnyPublisher<WeatherResponse, Error> {
-    Fail(error: NSError(domain: "", code: 1, userInfo: nil))
-      .eraseToAnyPublisher()
-  }
-}
-
-struct MockWeatherClient: WeatherClientProtocol {
+    },
+    searchLocations: { _ in
+      Just([])
+        .setFailureType(to: Error.self)
+        .eraseToAnyPublisher()
+    }
+  )
   
-  var _weather: () -> AnyPublisher<WeatherResponse, Error>
-  var _searchLocations: (CLLocationCoordinate2D) -> AnyPublisher<[Location], Error>
-  
-  func weather() -> AnyPublisher<WeatherResponse, Error> {
-    self._weather()
-  }
-  
-  func searchLocations(coordinate: CLLocationCoordinate2D) -> AnyPublisher<[Location], Error> {
-    self._searchLocations(coordinate)
-  }
+  static let failed = Self(
+    weather: {
+      Fail(error: NSError(domain: "", code: 1, userInfo: nil))
+        .eraseToAnyPublisher()
+    },
+    searchLocations: { _ in
+      Just([])
+        .setFailureType(to: Error.self)
+        .eraseToAnyPublisher()
+    }
+  )
 }
 
 struct WeatherResponse: Decodable, Equatable {
