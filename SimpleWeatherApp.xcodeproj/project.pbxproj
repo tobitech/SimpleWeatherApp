@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2013C8A0287E545000E7623E /* WeatherClient in Frameworks */ = {isa = PBXBuildFile; productRef = 2013C89F287E545000E7623E /* WeatherClient */; };
+		2013C8A2287E5A3300E7623E /* WeatherClientLive in Frameworks */ = {isa = PBXBuildFile; productRef = 2013C8A1287E5A3300E7623E /* WeatherClientLive */; };
 		20876BAF287DA15600940A8B /* SimpleWeatherApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20876BAE287DA15600940A8B /* SimpleWeatherApp.swift */; };
 		20876BB1287DA15600940A8B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20876BB0287DA15600940A8B /* ContentView.swift */; };
 		20876BB3287DA15800940A8B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 20876BB2287DA15800940A8B /* Assets.xcassets */; };
@@ -41,6 +42,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2013C8A2287E5A3300E7623E /* WeatherClientLive in Frameworks */,
 				2013C8A0287E545000E7623E /* WeatherClient in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -127,6 +129,7 @@
 			name = SimpleWeatherApp;
 			packageProductDependencies = (
 				2013C89F287E545000E7623E /* WeatherClient */,
+				2013C8A1287E5A3300E7623E /* WeatherClientLive */,
 			);
 			productName = SimpleWeatherApp;
 			productReference = 20876BAB287DA15600940A8B /* SimpleWeatherApp.app */;
@@ -484,6 +487,10 @@
 		2013C89F287E545000E7623E /* WeatherClient */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = WeatherClient;
+		};
+		2013C8A1287E5A3300E7623E /* WeatherClientLive */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = WeatherClientLive;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

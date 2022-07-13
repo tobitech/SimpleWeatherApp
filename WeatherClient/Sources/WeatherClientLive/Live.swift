@@ -7,6 +7,7 @@
 
 import Combine
 import Foundation
+import WeatherClient
 
 extension WeatherClient {
   public static let live = Self(

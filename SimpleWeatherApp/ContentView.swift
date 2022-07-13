@@ -16,7 +16,9 @@ class AppViewModel: ObservableObject {
   
   var weatherRequestCancellable: AnyCancellable?
   
-  init(isConnected: Bool = true, weatherClient: WeatherClient = .live) {
+  // we removed the .live default because we don't want the view model to know about a live client
+  // so that it isn't always waiting for the module it leaves in to compile first.
+  init(isConnected: Bool = true, weatherClient: WeatherClient) {
     self.isConnected = isConnected
     
     self.weatherRequestCancellable =  weatherClient.weather()

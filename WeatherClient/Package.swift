@@ -9,6 +9,9 @@ let package = Package(
     .library(
       name: "WeatherClient",
       targets: ["WeatherClient"]),
+    .library(
+      name: "WeatherClientLive",
+      targets: ["WeatherClientLive"])
   ],
   dependencies: [
   ],
@@ -19,5 +22,9 @@ let package = Package(
     .testTarget(
       name: "WeatherClientTests",
       dependencies: ["WeatherClient"]),
+    
+      .target(
+        name: "WeatherClientLive",
+        dependencies: ["WeatherClient"]),
   ]
 )
