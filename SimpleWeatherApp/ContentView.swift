@@ -8,6 +8,7 @@
 import Combine
 import CoreLocation
 import SwiftUI
+import WeatherClient
 
 class AppViewModel: ObservableObject {
   @Published var isConnected: Bool

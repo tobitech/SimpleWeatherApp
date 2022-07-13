@@ -9,7 +9,7 @@ import Combine
 import Foundation
 
 extension WeatherClient {
-  static let live = Self(
+  public static let live = Self(
     weather: {
       URLSession.shared.dataTaskPublisher(
         for: URL(

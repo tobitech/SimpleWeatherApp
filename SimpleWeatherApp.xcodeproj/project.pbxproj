@@ -7,9 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2013C898287E4FFD00E7623E /* WeatherClientInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2013C897287E4FFD00E7623E /* WeatherClientInterface.swift */; };
-		2013C89A287E509A00E7623E /* WeatherClientLive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2013C899287E509A00E7623E /* WeatherClientLive.swift */; };
-		2013C89C287E511500E7623E /* WeatherClientMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2013C89B287E511500E7623E /* WeatherClientMocks.swift */; };
+		2013C8A0287E545000E7623E /* WeatherClient in Frameworks */ = {isa = PBXBuildFile; productRef = 2013C89F287E545000E7623E /* WeatherClient */; };
 		20876BAF287DA15600940A8B /* SimpleWeatherApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20876BAE287DA15600940A8B /* SimpleWeatherApp.swift */; };
 		20876BB1287DA15600940A8B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20876BB0287DA15600940A8B /* ContentView.swift */; };
 		20876BB3287DA15800940A8B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 20876BB2287DA15800940A8B /* Assets.xcassets */; };
@@ -28,9 +26,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		2013C897287E4FFD00E7623E /* WeatherClientInterface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherClientInterface.swift; sourceTree = "<group>"; };
-		2013C899287E509A00E7623E /* WeatherClientLive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherClientLive.swift; sourceTree = "<group>"; };
-		2013C89B287E511500E7623E /* WeatherClientMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherClientMocks.swift; sourceTree = "<group>"; };
+		2013C89D287E527600E7623E /* WeatherClient */ = {isa = PBXFileReference; lastKnownFileType = text; path = WeatherClient; sourceTree = SOURCE_ROOT; };
 		20876BAB287DA15600940A8B /* SimpleWeatherApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SimpleWeatherApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		20876BAE287DA15600940A8B /* SimpleWeatherApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleWeatherApp.swift; sourceTree = "<group>"; };
 		20876BB0287DA15600940A8B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -45,6 +41,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2013C8A0287E545000E7623E /* WeatherClient in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -58,12 +55,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2013C89E287E545000E7623E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		20876BA2287DA15600940A8B = {
 			isa = PBXGroup;
 			children = (
 				20876BAD287DA15600940A8B /* SimpleWeatherApp */,
 				20876BBE287DA15800940A8B /* SimpleWeatherAppTests */,
 				20876BAC287DA15600940A8B /* Products */,
+				2013C89E287E545000E7623E /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -79,11 +84,9 @@
 		20876BAD287DA15600940A8B /* SimpleWeatherApp */ = {
 			isa = PBXGroup;
 			children = (
+				2013C89D287E527600E7623E /* WeatherClient */,
 				20876BAE287DA15600940A8B /* SimpleWeatherApp.swift */,
 				20876BB0287DA15600940A8B /* ContentView.swift */,
-				2013C897287E4FFD00E7623E /* WeatherClientInterface.swift */,
-				2013C899287E509A00E7623E /* WeatherClientLive.swift */,
-				2013C89B287E511500E7623E /* WeatherClientMocks.swift */,
 				20876BB2287DA15800940A8B /* Assets.xcassets */,
 				20876BB4287DA15800940A8B /* Preview Content */,
 			);
@@ -122,6 +125,9 @@
 			dependencies = (
 			);
 			name = SimpleWeatherApp;
+			packageProductDependencies = (
+				2013C89F287E545000E7623E /* WeatherClient */,
+			);
 			productName = SimpleWeatherApp;
 			productReference = 20876BAB287DA15600940A8B /* SimpleWeatherApp.app */;
 			productType = "com.apple.product-type.application";
@@ -207,10 +213,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				20876BB1287DA15600940A8B /* ContentView.swift in Sources */,
-				2013C89A287E509A00E7623E /* WeatherClientLive.swift in Sources */,
 				20876BAF287DA15600940A8B /* SimpleWeatherApp.swift in Sources */,
-				2013C89C287E511500E7623E /* WeatherClientMocks.swift in Sources */,
-				2013C898287E4FFD00E7623E /* WeatherClientInterface.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -476,6 +479,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		2013C89F287E545000E7623E /* WeatherClient */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = WeatherClient;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 20876BA3287DA15600940A8B /* Project object */;
 }
