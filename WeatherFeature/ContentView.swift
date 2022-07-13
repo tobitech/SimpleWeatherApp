@@ -100,3 +100,4 @@ let dayOfWeekFormatter: DateFormatter = {
   formatter.dateFormat = "EEEE"
   return formatter
 }()
+
