@@ -10,6 +10,24 @@ import Network
 import SwiftUI
 import WeatherClient
 
+// All we've done here is written a little struct wrapper
+// that exposes endpoints that mimic the endpoints that we would want to call on a path monitor.
+public struct PathMonitorClient {
+  public var setPathUpdateHandler: (@escaping (NWPath) -> Void) -> Void
+  public var start: (DispatchQueue) -> Void
+}
+
+extension PathMonitorClient {
+  // we're using a computed property here because we need to do some work here that references real Apple code.
+  static var live: Self {
+    let monitor = NWPathMonitor()
+    return Self (
+      setPathUpdateHandler: { monitor.pathUpdateHandler = $0 },
+      start: monitor.start(queue:)
+    )
+  }
+}
+
 public class AppViewModel: ObservableObject {
   @Published var isConnected = true
   @Published var weatherResults: [WeatherResponse.ConsolidatedWeather] = []
@@ -22,12 +40,13 @@ public class AppViewModel: ObservableObject {
   // so that it isn't always waiting for the module it leaves in to compile first.
   public init(
 //    isConnected: Bool = true,
+    pathMonitorClient: PathMonitorClient,
     weatherClient: WeatherClient
   ) {
     self.weatherClient = weatherClient
-    let pathMonitor = NWPathMonitor()
+//    let pathMonitor = NWPathMonitor()
 //    self.isConnected = isConnected
-    pathMonitor.pathUpdateHandler = { [weak self] path in
+    pathMonitorClient.setPathUpdateHandler { [weak self] path in
       guard let self = self else { return }
       self.isConnected = path.status == .satisfied
       if self.isConnected {
@@ -36,7 +55,7 @@ public class AppViewModel: ObservableObject {
         self.weatherResults = []
       }
     }
-    pathMonitor.start(queue: .main)
+    pathMonitorClient.start(.main)
     
     self.refreshWeather()
   }
@@ -116,6 +135,7 @@ struct ContentView_Previews: PreviewProvider {
     
     return ContentView(
       viewModel: AppViewModel(
+        pathMonitorClient: .live,
         weatherClient: client
       )
     )
