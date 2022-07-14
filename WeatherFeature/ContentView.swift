@@ -31,6 +31,7 @@ extension NetworkPath {
 // All we've done here is written a little struct wrapper
 // that exposes endpoints that mimic the endpoints that we would want to call on a path monitor.
 public struct PathMonitorClient {
+  public var cancel: () -> Void
 //  public var setPathUpdateHandler: (@escaping (NWPath) -> Void) -> Void
   // now that we've a wrapper we can replace NWPath with that wrapper here.
   public var setPathUpdateHandler: (@escaping (NetworkPath) -> Void) -> Void
@@ -42,6 +43,7 @@ extension PathMonitorClient {
   static var live: Self {
     let monitor = NWPathMonitor()
     return Self (
+      cancel: { monitor.cancel() },
       setPathUpdateHandler: { callback in
         monitor.pathUpdateHandler = { path in
           callback(NetworkPath(rawValue: path))
@@ -55,6 +57,7 @@ extension PathMonitorClient {
 extension PathMonitorClient {
   // let's start with a mock that provides ideal internet connectivity.
   static let satisfied = Self(
+    cancel: { },
     setPathUpdateHandler: { callback in
       // NWPath doesn't have a way of constructing this value
       // callback(/*satisified*/)
@@ -67,9 +70,26 @@ extension PathMonitorClient {
   )
   
   static let unsatisfied = Self(
+    cancel: { },
     setPathUpdateHandler: { callback in
       callback(NetworkPath(status: .unsatisfied))
     },
+    start: { _ in }
+  )
+  
+  static let flaky = Self(
+    cancel: { },
+    setPathUpdateHandler: { callback in
+      // to represent an idea of being flaky - we will setup a timer so that every two seconds it will flip the current status.
+      
+      var status = NWPath.Status.satisfied
+      
+      Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { _ in
+        callback(.init(status: status))
+        status = status == .satisfied ? .unsatisfied : .satisfied
+      }
+    },
+    // no-op closure.
     start: { _ in }
   )
 }
@@ -81,6 +101,7 @@ public class AppViewModel: ObservableObject {
   var weatherRequestCancellable: AnyCancellable?
   
   let weatherClient: WeatherClient
+  let pathMonitorClient: PathMonitorClient
   
   // we removed the .live default because we don't want the view model to know about a live client
   // so that it isn't always waiting for the module it leaves in to compile first.
@@ -90,9 +111,10 @@ public class AppViewModel: ObservableObject {
     weatherClient: WeatherClient
   ) {
     self.weatherClient = weatherClient
+    self.pathMonitorClient = pathMonitorClient
 //    let pathMonitor = NWPathMonitor()
 //    self.isConnected = isConnected
-    pathMonitorClient.setPathUpdateHandler { [weak self] path in
+    self.pathMonitorClient.setPathUpdateHandler { [weak self] path in
       guard let self = self else { return }
       self.isConnected = path.status == .satisfied
       if self.isConnected {
@@ -101,10 +123,14 @@ public class AppViewModel: ObservableObject {
         self.weatherResults = []
       }
     }
-    pathMonitorClient.start(.main)
+    self.pathMonitorClient.start(.main)
     
     // this was causing a bug - we are removing it so that we let the path update drive the refresh call.
     // self.refreshWeather()
+  }
+  
+  deinit {
+    self.pathMonitorClient.cancel()
   }
   
   func refreshWeather() {
@@ -182,7 +208,7 @@ struct ContentView_Previews: PreviewProvider {
     
     return ContentView(
       viewModel: AppViewModel(
-        pathMonitorClient: .satisfied,
+        pathMonitorClient: .flaky,
         weatherClient: client
       )
     )
