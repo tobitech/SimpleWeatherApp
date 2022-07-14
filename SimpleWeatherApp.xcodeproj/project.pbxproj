@@ -17,6 +17,8 @@
 		2013C8BF287E5CB000E7623E /* WeatherFeature.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2013C8A8287E5CB000E7623E /* WeatherFeature.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2013C8C8287E5D1300E7623E /* WeatherClient in Frameworks */ = {isa = PBXBuildFile; productRef = 2013C8C7287E5D1300E7623E /* WeatherClient */; };
 		2013C8CA287E5E5400E7623E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2013C8C9287E5E5400E7623E /* ContentView.swift */; };
+		20644493287FF76500343678 /* PathMonitorClient in Frameworks */ = {isa = PBXBuildFile; productRef = 20644492287FF76500343678 /* PathMonitorClient */; };
+		20644495287FF7AD00343678 /* PathMonitorClientLive in Frameworks */ = {isa = PBXBuildFile; productRef = 20644494287FF7AD00343678 /* PathMonitorClientLive */; };
 		20876BAF287DA15600940A8B /* SimpleWeatherApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20876BAE287DA15600940A8B /* SimpleWeatherApp.swift */; };
 		20876BB3287DA15800940A8B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 20876BB2287DA15800940A8B /* Assets.xcassets */; };
 		20876BB6287DA15800940A8B /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 20876BB5287DA15800940A8B /* Preview Assets.xcassets */; };
@@ -77,6 +79,7 @@
 		2013C8B8287E5CB000E7623E /* WeatherFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherFeatureTests.swift; sourceTree = "<group>"; };
 		2013C8C9287E5E5400E7623E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		2013C8CB287EF78300E7623E /* Metrology */ = {isa = PBXFileReference; lastKnownFileType = text; path = Metrology; sourceTree = SOURCE_ROOT; };
+		20644491287FF41300343678 /* PathMonitorClient */ = {isa = PBXFileReference; lastKnownFileType = text; path = PathMonitorClient; sourceTree = SOURCE_ROOT; };
 		20876BAB287DA15600940A8B /* SimpleWeatherApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SimpleWeatherApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		20876BAE287DA15600940A8B /* SimpleWeatherApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleWeatherApp.swift; sourceTree = "<group>"; };
 		20876BB2287DA15800940A8B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -92,6 +95,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2013C8C8287E5D1300E7623E /* WeatherClient in Frameworks */,
+				20644493287FF76500343678 /* PathMonitorClient in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -108,6 +112,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2013C8A2287E5A3300E7623E /* WeatherClientLive in Frameworks */,
+				20644495287FF7AD00343678 /* PathMonitorClientLive in Frameworks */,
 				2013C8BD287E5CB000E7623E /* WeatherFeature.framework in Frameworks */,
 				2013C8A0287E545000E7623E /* WeatherClient in Frameworks */,
 			);
@@ -175,6 +180,7 @@
 		20876BAD287DA15600940A8B /* SimpleWeatherApp */ = {
 			isa = PBXGroup;
 			children = (
+				20644491287FF41300343678 /* PathMonitorClient */,
 				2013C8CB287EF78300E7623E /* Metrology */,
 				2013C89D287E527600E7623E /* WeatherClient */,
 				20876BAE287DA15600940A8B /* SimpleWeatherApp.swift */,
@@ -230,6 +236,7 @@
 			name = WeatherFeature;
 			packageProductDependencies = (
 				2013C8C7287E5D1300E7623E /* WeatherClient */,
+				20644492287FF76500343678 /* PathMonitorClient */,
 			);
 			productName = WeatherFeature;
 			productReference = 2013C8A8287E5CB000E7623E /* WeatherFeature.framework */;
@@ -272,6 +279,7 @@
 			packageProductDependencies = (
 				2013C89F287E545000E7623E /* WeatherClient */,
 				2013C8A1287E5A3300E7623E /* WeatherClientLive */,
+				20644494287FF7AD00343678 /* PathMonitorClientLive */,
 			);
 			productName = SimpleWeatherApp;
 			productReference = 20876BAB287DA15600940A8B /* SimpleWeatherApp.app */;
@@ -807,6 +815,14 @@
 		2013C8C7287E5D1300E7623E /* WeatherClient */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = WeatherClient;
+		};
+		20644492287FF76500343678 /* PathMonitorClient */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PathMonitorClient;
+		};
+		20644494287FF7AD00343678 /* PathMonitorClientLive */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PathMonitorClientLive;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
