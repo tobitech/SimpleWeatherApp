@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 import Network
 
@@ -25,19 +26,17 @@ extension NetworkPath {
 // All we've done here is written a little struct wrapper
 // that exposes endpoints that mimic the endpoints that we would want to call on a path monitor.
 public struct PathMonitorClient {
-  public var cancel: () -> Void
+//  public var cancel: () -> Void
   //  public var setPathUpdateHandler: (@escaping (NWPath) -> Void) -> Void
   // now that we've a wrapper we can replace NWPath with that wrapper here.
-  public var setPathUpdateHandler: (@escaping (NetworkPath) -> Void) -> Void
-  public var start: (DispatchQueue) -> Void
+//  public var setPathUpdateHandler: (@escaping (NetworkPath) -> Void) -> Void
+//  public var start: (DispatchQueue) -> Void
+  
+  public var networkPathPublisher: AnyPublisher<NetworkPath, Never>
   
   public init(
-    cancel: @escaping () -> Void,
-    setPathUpdateHandler: @escaping (@escaping (NetworkPath) -> Void) -> Void,
-    start: @escaping (DispatchQueue) -> Void
+    networkPathPublisher: AnyPublisher<NetworkPath, Never>
   ) {
-    self.cancel = cancel
-    self.setPathUpdateHandler = setPathUpdateHandler
-    self.start = start
+    self.networkPathPublisher = networkPathPublisher
   }
 }

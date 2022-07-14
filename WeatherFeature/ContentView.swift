@@ -15,6 +15,7 @@ public class AppViewModel: ObservableObject {
   @Published var weatherResults: [WeatherResponse.ConsolidatedWeather] = []
   
   var weatherRequestCancellable: AnyCancellable?
+  var pathUpdateCancellable: AnyCancellable?
   
   let weatherClient: WeatherClient
   let pathMonitorClient: PathMonitorClient
@@ -30,24 +31,36 @@ public class AppViewModel: ObservableObject {
     self.pathMonitorClient = pathMonitorClient
 //    let pathMonitor = NWPathMonitor()
 //    self.isConnected = isConnected
-    self.pathMonitorClient.setPathUpdateHandler { [weak self] path in
-      guard let self = self else { return }
-      self.isConnected = path.status == .satisfied
-      if self.isConnected {
-        self.refreshWeather()
-      } else {
-        self.weatherResults = []
-      }
-    }
-    self.pathMonitorClient.start(.main)
+    
+    // now handled by the publisher
+//    self.pathMonitorClient.setPathUpdateHandler { [weak self] path in
+    
+    self.pathUpdateCancellable = self.pathMonitorClient.networkPathPublisher
+      .map { $0.status == .satisfied }
+      // this will prevent two emissions to happen in a row that are the same value
+      // with this refactor we can limit the number of refreshes to our feature makes where the path status hasn't changed.
+      .removeDuplicates()
+      .sink(receiveValue: { [weak self] isConnected in
+        guard let self = self else { return }
+        self.isConnected = isConnected
+        if self.isConnected {
+          self.refreshWeather()
+        } else {
+          self.weatherResults = []
+        }
+      })
+    
+    // now handled by the publisher
+    // self.pathMonitorClient.start(.main)
     
     // this was causing a bug - we are removing it so that we let the path update drive the refresh call.
     // self.refreshWeather()
   }
   
-  deinit {
-    self.pathMonitorClient.cancel()
-  }
+  // now handled by the publisher
+//  deinit {
+//    self.pathMonitorClient.cancel()
+//  }
   
   func refreshWeather() {
     self.weatherResults = []
@@ -124,7 +137,7 @@ struct ContentView_Previews: PreviewProvider {
     
     return ContentView(
       viewModel: AppViewModel(
-        pathMonitorClient: .flaky,
+        pathMonitorClient: .satisfied,
         weatherClient: client
       )
     )
