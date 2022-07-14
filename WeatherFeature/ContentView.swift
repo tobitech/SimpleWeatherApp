@@ -6,22 +6,45 @@
 //
 
 import Combine
-import CoreLocation
+import Network
 import SwiftUI
 import WeatherClient
 
 public class AppViewModel: ObservableObject {
-  @Published var isConnected: Bool
+  @Published var isConnected = true
   @Published var weatherResults: [WeatherResponse.ConsolidatedWeather] = []
   
   var weatherRequestCancellable: AnyCancellable?
   
+  let weatherClient: WeatherClient
+  
   // we removed the .live default because we don't want the view model to know about a live client
   // so that it isn't always waiting for the module it leaves in to compile first.
-  public init(isConnected: Bool = true, weatherClient: WeatherClient) {
-    self.isConnected = isConnected
+  public init(
+//    isConnected: Bool = true,
+    weatherClient: WeatherClient
+  ) {
+    self.weatherClient = weatherClient
+    let pathMonitor = NWPathMonitor()
+//    self.isConnected = isConnected
+    pathMonitor.pathUpdateHandler = { [weak self] path in
+      guard let self = self else { return }
+      self.isConnected = path.status == .satisfied
+      if self.isConnected {
+        self.refreshWeather()
+      } else {
+        self.weatherResults = []
+      }
+    }
+    pathMonitor.start(queue: .main)
     
-    self.weatherRequestCancellable =  weatherClient.weather()
+    self.refreshWeather()
+  }
+  
+  func refreshWeather() {
+    self.weatherResults = []
+    
+    self.weatherRequestCancellable =  self.weatherClient.weather()
       .sink(
         receiveCompletion: { _ in },
         receiveValue: {[weak self] response in
