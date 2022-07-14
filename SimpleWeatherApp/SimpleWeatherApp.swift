@@ -7,6 +7,7 @@
 
 import SwiftUI
 import WeatherClientLive
+import WeatherFeature
 
 @main
 struct SimpleWeatherApp: App {

@@ -10,7 +10,7 @@ import CoreLocation
 import SwiftUI
 import WeatherClient
 
-class AppViewModel: ObservableObject {
+public class AppViewModel: ObservableObject {
   @Published var isConnected: Bool
   @Published var weatherResults: [WeatherResponse.ConsolidatedWeather] = []
   
@@ -18,7 +18,7 @@ class AppViewModel: ObservableObject {
   
   // we removed the .live default because we don't want the view model to know about a live client
   // so that it isn't always waiting for the module it leaves in to compile first.
-  init(isConnected: Bool = true, weatherClient: WeatherClient) {
+  public init(isConnected: Bool = true, weatherClient: WeatherClient) {
     self.isConnected = isConnected
     
     self.weatherRequestCancellable =  weatherClient.weather()
@@ -30,10 +30,14 @@ class AppViewModel: ObservableObject {
   }
 }
 
-struct ContentView: View {
+public struct ContentView: View {
   @ObservedObject var viewModel: AppViewModel
   
-  var body: some View {
+  public init(viewModel: AppViewModel) {
+    self.viewModel = viewModel
+  }
+  
+  public var body: some View {
     NavigationView {
       ZStack(alignment: .bottom) {
         ZStack(alignment: .bottomTrailing) {
