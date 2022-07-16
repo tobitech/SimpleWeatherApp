@@ -6,19 +6,24 @@
 //
 
 import Combine
+import CoreLocation
 import SwiftUI
 import WeatherClient
 import PathMonitorClient
 
-public class AppViewModel: ObservableObject {
+public class AppViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
+  @Published var currentLocation: Location?
   @Published var isConnected = true
   @Published var weatherResults: [WeatherResponse.ConsolidatedWeather] = []
   
   var weatherRequestCancellable: AnyCancellable?
   var pathUpdateCancellable: AnyCancellable?
+  var searchLocationsCancellable: AnyCancellable?
   
   let weatherClient: WeatherClient
   let pathMonitorClient: PathMonitorClient
+  
+  let locationManager = CLLocationManager()
   
   // we removed the .live default because we don't want the view model to know about a live client
   // so that it isn't always waiting for the module it leaves in to compile first.
@@ -34,6 +39,8 @@ public class AppViewModel: ObservableObject {
     
     // now handled by the publisher
 //    self.pathMonitorClient.setPathUpdateHandler { [weak self] path in
+    
+    super.init()
     
     self.pathUpdateCancellable = self.pathMonitorClient.networkPathPublisher
       .map { $0.status == .satisfied }
@@ -55,6 +62,8 @@ public class AppViewModel: ObservableObject {
     
     // this was causing a bug - we are removing it so that we let the path update drive the refresh call.
     // self.refreshWeather()
+    
+    self.locationManager.delegate = self
   }
   
   // now handled by the publisher
@@ -63,14 +72,84 @@ public class AppViewModel: ObservableObject {
 //  }
   
   func refreshWeather() {
+    guard let location = currentLocation else {
+      return
+    }
+    
     self.weatherResults = []
     
-    self.weatherRequestCancellable =  self.weatherClient.weather()
+    self.weatherRequestCancellable =  self.weatherClient.weather(location.woeid)
       .sink(
         receiveCompletion: { _ in },
         receiveValue: {[weak self] response in
           self?.weatherResults = response.consolidatedWeather
         })
+  }
+  
+  func locationButtonTapped() {
+    // the logic we want to put here is to first check if the user has previously given us access to their location.
+    
+    switch CLLocationManager.authorizationStatus() {
+    case .notDetermined:
+      // when we don't know the status - we should request for authorization.
+      self.locationManager.requestWhenInUseAuthorization()
+    case .restricted:
+      // restricted by parental control.
+      // TODO: Show an alert
+      break
+    case .denied:
+      // when user already denied us
+      // TODO: Show an alert
+      break
+    case .authorizedAlways, .authorizedWhenInUse:
+      // whichever authorization type we were granted we can request the location data.
+      self.locationManager.requestLocation()
+      
+    @unknown default:
+      break
+    }
+  }
+  
+  // MARK: - CLLocationManagerDelegate
+  public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+    switch status {
+    case .notDetermined:
+      // not likely that we get this status after first interaction with location manager.
+      break
+
+    case .restricted:
+      // TODO: Show an alert
+      // this will have a different alert message since it's likely it's intentional.
+      break
+    case .denied:
+      // TODO: Show an alert
+      // same as above.
+      break
+      
+    case .authorizedAlways, .authorizedWhenInUse, .authorized:
+      self.locationManager.requestLocation()
+
+    @unknown default:
+      break
+    }
+  }
+  
+  public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    guard let location = locations.first else { return }
+    
+    self.searchLocationsCancellable = self.weatherClient.searchLocations(location.coordinate).sink(
+      receiveCompletion: { _ in
+        // normally we will do an error handling and show alert here if this fails.
+      },
+      receiveValue: { [weak self] locations in
+        self?.currentLocation = locations.first
+        self?.refreshWeather()
+      }
+    )
+  }
+  
+  public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+    // the app will just crash if there is an error and this delegate method wasn't called.
   }
 }
 
@@ -99,7 +178,7 @@ public struct ContentView: View {
           }
           
           Button(
-            action: {  }
+            action: { self.viewModel.locationButtonTapped() }
           ) {
             Image(systemName: "location.fill")
               .foregroundColor(.white)
@@ -121,7 +200,7 @@ public struct ContentView: View {
           .background(Color.red)
         }
       }
-      .navigationBarTitle("Weather")
+      .navigationBarTitle(self.viewModel.currentLocation?.title ?? "Weather")
     }
   }
 }
