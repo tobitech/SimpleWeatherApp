@@ -11,6 +11,41 @@ import SwiftUI
 import WeatherClient
 import PathMonitorClient
 
+struct LocationClient {
+  var authorizationStatus: () -> CLAuthorizationStatus
+  var requestWhenInUseAuthorization: () -> Void
+  var requestLocation: () -> Void
+  
+  // we could feed the view model through this closure to any live underlying manager.
+  // while this is a great approach, it would not let us fully control the dependency.
+  // as long as view model has the delegate it will have full access to the live CLLocationManager in every single one of its delegate methods.
+  // but we don't want our features viewmodel to know about any live framework or implementation.
+  // var setDelegate: (CLLocationManagerDelegate) -> Void
+  
+  var delegate: AnyPublisher<DelegateEvent, Never>
+  
+  enum DelegateEvent {
+    case didChangeAuthorization(CLAuthorizationStatus)
+    case didUpdateLocations([CLLocation])
+    case didFailWithError(Error)
+  }
+}
+
+extension LocationClient {
+  static var live: Self {
+    
+    let locationManager = CLLocationManager()
+    let subject = PassthroughSubject<DelegateEvent, Never>()
+    
+    return Self(
+      authorizationStatus: CLLocationManager.authorizationStatus,
+      requestWhenInUseAuthorization: locationManager.requestWhenInUseAuthorization,
+      requestLocation: locationManager.requestLocation,
+      delegate: subject.eraseToAnyPublisher()
+    )
+  }
+}
+
 public class AppViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
   @Published var currentLocation: Location?
   @Published var isConnected = true
