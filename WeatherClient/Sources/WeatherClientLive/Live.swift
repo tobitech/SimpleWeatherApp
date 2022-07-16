@@ -11,10 +11,10 @@ import WeatherClient
 
 extension WeatherClient {
   public static let live = Self(
-    weather: {
+    weather: { id in
       URLSession.shared.dataTaskPublisher(
         for: URL(
-          string: "https://www.metaweather.com/api/location/2459115"
+          string: "https://www.metaweather.com/api/location/\(id)"
         )!
       )
       .map { data, _ in data }
@@ -22,8 +22,16 @@ extension WeatherClient {
       .receive(on: DispatchQueue.main)
       .eraseToAnyPublisher()
     },
-    searchLocations: { _ in
-      fatalError()
+    searchLocations: { coordinate in
+      URLSession.shared.dataTaskPublisher(
+        for: URL(
+          string: "https://www.metaweather.com/api/location/search?latlong=\(coordinate.latitude),\(coordinate.longitude)"
+        )!
+      )
+      .map { data, _ in data }
+      .decode(type: [Location].self, decoder: weatherJsonDecoder)
+      .receive(on: DispatchQueue.main)
+      .eraseToAnyPublisher()
     }
   )
 }
