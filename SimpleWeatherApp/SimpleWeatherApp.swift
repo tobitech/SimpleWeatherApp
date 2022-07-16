@@ -9,6 +9,7 @@ import SwiftUI
 import WeatherClientLive
 import WeatherFeature
 import PathMonitorClientLive
+import LocationClientLive
 
 @main
 struct SimpleWeatherApp: App {
@@ -18,6 +19,7 @@ struct SimpleWeatherApp: App {
         // we are setting .live here because this place is where we need to build absolutely everything no matter what.
         // but in content view we could move that into a separate feature module and it's not concerned about live.
         viewModel: AppViewModel(
+          locationClient: .live,
           pathMonitorClient: .live(queue: .main),
           weatherClient: .live
         )
