@@ -96,6 +96,23 @@ extension LocationClient {
       delegate: subject.eraseToAnyPublisher()
     )
   }
+  
+  static var notDetermined: Self {
+    var status = CLAuthorizationStatus.notDetermined
+    let subject = PassthroughSubject<DelegateEvent, Never>()
+    
+    return Self(
+      authorizationStatus: { status },
+      requestWhenInUseAuthorization: {
+        status = .authorizedWhenInUse
+        subject.send(.didChangeAuthorization(status))
+      },
+      requestLocation: {
+        subject.send(.didUpdateLocations([CLLocation()]))
+      },
+      delegate: subject.eraseToAnyPublisher()
+    )
+  }
 }
 
 public class AppViewModel: ObservableObject {
@@ -287,15 +304,9 @@ public struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
   static var previews: some View {
     
-//    var client = WeatherClient.happyPath
-//    client.searchLocations = { _ in
-//      Fail(error: NSError(domain: "", code: 1))
-//        .eraseToAnyPublisher()
-//    }
-    
     return ContentView(
       viewModel: AppViewModel(
-        locationClient: .authorizedWhenInUse,
+        locationClient: .notDetermined,
         pathMonitorClient: .satisfied,
         weatherClient: .happyPath
       )
