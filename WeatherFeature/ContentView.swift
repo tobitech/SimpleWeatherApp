@@ -74,6 +74,30 @@ extension LocationClient {
   }
 }
 
+extension LocationClient {
+  // you can also upgrade this to a function to take a parameter if you need return new locations with real coordinates
+  // static func authorizedWhenInUse(coordinate:) -> Self {
+  static var authorizedWhenInUse: Self {
+    
+    let subject = PassthroughSubject<DelegateEvent, Never>()
+    
+    return Self(
+      authorizationStatus: { .authorizedWhenInUse },
+      // for this mock this endpiot should not even be called, because anyone that wants to call it
+      // should first check the authoriazaiton status and for this mock it always returns a valid value.
+      requestWhenInUseAuthorization: { },
+      // for this one we need a way to communicate to the delegate publisher to send it a delegate event of `didUpdateLocations`
+      // we will do that by defining a subject above - just like we did with the path monitory client.
+      requestLocation: {
+        // now when somone requests a location, we can just supply a location from here.
+        // in here you can create actual instances of CLLocation and pass in some coordinates
+        subject.send(.didUpdateLocations([CLLocation()]))
+      },
+      delegate: subject.eraseToAnyPublisher()
+    )
+  }
+}
+
 public class AppViewModel: ObservableObject {
   @Published var currentLocation: Location?
   @Published var isConnected = true
@@ -156,6 +180,10 @@ public class AppViewModel: ObservableObject {
         break
       }
     }
+    
+    if self.locationClient.authorizationStatus() == .authorizedWhenInUse {
+      self.locationClient.requestLocation()
+    }
   }
   
   // now handled by the publisher
@@ -221,6 +249,7 @@ public struct ContentView: View {
                   .font(.title)
                 
                 Text("Current temp: \(weather.theTemp, specifier: "%.1f")°C")
+                  .bold()
                 Text("Max temp: \(weather.maxTemp, specifier: "%.1f")°C")
                 Text("Min temp: \(weather.minTemp, specifier: "%.1f")°C")
               }
@@ -258,17 +287,17 @@ public struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
   static var previews: some View {
     
-    var client = WeatherClient.happyPath
-    client.searchLocations = { _ in
-      Fail(error: NSError(domain: "", code: 1))
-        .eraseToAnyPublisher()
-    }
+//    var client = WeatherClient.happyPath
+//    client.searchLocations = { _ in
+//      Fail(error: NSError(domain: "", code: 1))
+//        .eraseToAnyPublisher()
+//    }
     
     return ContentView(
       viewModel: AppViewModel(
-        locationClient: .live,
+        locationClient: .authorizedWhenInUse,
         pathMonitorClient: .satisfied,
-        weatherClient: client
+        weatherClient: .happyPath
       )
     )
   }

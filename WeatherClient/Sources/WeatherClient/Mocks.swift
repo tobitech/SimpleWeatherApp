@@ -36,7 +36,9 @@ extension WeatherClient {
       .eraseToAnyPublisher()
     },
     searchLocations: { _ in
-      Just([])
+      Just([
+        Location(title: "Lagos", woeid: 1)
+      ])
         .setFailureType(to: Error.self)
         .eraseToAnyPublisher()
     }
