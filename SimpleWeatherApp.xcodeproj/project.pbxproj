@@ -323,7 +323,6 @@
 					};
 					2013C8B0287E5CB000E7623E = {
 						CreatedOnToolsVersion = 13.4;
-						TestTargetID = 20876BAA287DA15600940A8B;
 					};
 					20876BAA287DA15600940A8B = {
 						CreatedOnToolsVersion = 13.4;
@@ -522,7 +521,6 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SimpleWeatherApp.app/SimpleWeatherApp";
 			};
 			name = Debug;
 		};
@@ -540,7 +538,6 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SimpleWeatherApp.app/SimpleWeatherApp";
 			};
 			name = Release;
 		};
